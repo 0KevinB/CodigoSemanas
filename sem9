@@ -76,7 +76,7 @@ object Exa6{
             weight match {
                 case Success(v) => v
                 case Failure(e) => 
-                    println("Error en la Edad")
+                    println("Error en el peso")
                     inData()
         })
     }
