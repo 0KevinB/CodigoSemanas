@@ -1,0 +1,38 @@
+package semana10
+import rx._
+object Main extends App {
+/*  val a = Var(1)
+  val b = Var(2)
+  val c = Rx{a() + b()}
+  var d = Rx{c()*5}
+  var e = Rx{c() + 4}
+  val f = Rx{d() + e() + 4}
+  println(f.now)
+  a() = 3
+  println(f.now)
+*/
+  /*
+  val a = Var(1)
+  var cont = 0
+  val o = a.triggerLater{
+    cont = cont + 1
+  }
+  println(cont)
+  a() = 4
+  println(cont)
+*/
+  val a = Var(1)
+  val b = Rx{2*a()}
+  var target = 0
+  val o = b.trigger{
+    target = b.now
+  }
+  println(target)
+  a() = 2
+  println(target)
+  a.kill()
+  a() = 3
+  println(target)
+}
+
+
