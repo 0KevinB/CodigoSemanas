@@ -1,0 +1,91 @@
+APP
+package semana11;
+
+import java.util.List;
+import java.util.concurrent.Flow;
+import java.util.concurrent.SubmissionPublisher;
+import java.util.function.Function;
+
+public class App {
+    public static void main(String[] args) throws InterruptedException {
+        SubmissionPublisher<String> publisher = new SubmissionPublisher<>();
+        // Crear el subscriptor y subscripcion
+
+        PrinterSubscriber printerSubscriber = new PrinterSubscriber();
+        Function<String, String> toApp = String::toUpperCase;
+        TransformProcessor transformProcessor = new TransformProcessor(toApp);
+        publisher.subscribe(transformProcessor);
+        transformProcessor.subscribe(printerSubscriber);
+
+        List<String> items = List.of("juan", "pedro", "mayra", "ana", "ariel", "diego");
+        items.forEach(publisher::submit);
+        Thread.sleep(1*1000);
+        publisher.close();
+    }
+}
+TRA
+package semana11;
+
+import java.util.concurrent.Flow;
+import java.util.concurrent.SubmissionPublisher;
+import java.util.function.Function;
+
+public class TransformProcessor extends SubmissionPublisher<String>
+        implements Flow.Processor<String, String> {
+    private Flow.Subscription subscription;
+    private Function<String, String> function;
+
+    public TransformProcessor(Function<String, String> function) {
+        this.function = function;
+    }
+
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        this.subscription = subscription;
+        this.subscription.request(1);
+    }
+
+    @Override
+    public void onNext(String item) {
+        submit(function.apply(item));
+        this.subscription.request(1);
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        throwable.printStackTrace();
+    }
+
+    @Override
+    public void onComplete() { close(); }
+}
+PRI
+package semana11;
+
+import java.util.concurrent.Flow;
+
+public class PrinterSubscriber implements Flow.Subscriber<String>{
+    private Flow.Subscription subscripcion;
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        System.out.println("Suscrito");
+        this.subscripcion = subscription;
+        this.subscripcion.request(1);
+    }
+
+    @Override
+    public void onNext(String item) {
+        System.out.printf("Valor: %s\n", item);
+        this.subscripcion.request(1);
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        throwable.printStackTrace();
+    }
+
+    @Override
+    public void onComplete() {
+        System.out.println("Todo procesado");
+    }
+}
